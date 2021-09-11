@@ -1,2 +1,2 @@
-# emergency_fw
-Simple bash FW for emergency drop
+# emergencyFW  
+A stupid bash script to quickly inject massive IPTABLES rules.  
