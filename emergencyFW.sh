@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# ./emergency_fw.sh {action} {format} {target}
+# ./emergencyFW.sh {action} {format} {target}
 # {action} = block / unblock
-# {format} = ipaddr, iprange or country
-# {target} = 192.168.x.x, 192.168.1.0/24 or FR/US/EN/CA/...
+# {format} = ip / country
+# {target} = 192.168.x.x / 192.168.1.0/24 / fr/us/en/ca/...
 
 
 
 ##### GLOBAL VARS #####
 
-WORKPATH="/tmp/emergency_fw/"
+# WORKPATH="/tmp/emergencyFW/"
 ACTION="$1"
 FORMAT="$2"
 TARGET="$3"
@@ -20,7 +20,7 @@ TARGET="$3"
 
 function check_workpath()
 {
-    WORKPATH="$1"
+    WORKPATH="/tmp/emergencyFW/"
     
     if [[ ! -e "$WORKPATH" ]]
     then
@@ -72,7 +72,7 @@ function core()
     TARGET="$3"
     WORKPATH="$4"
     
-    check_workpath $WORKPATH
+    check_workpath # $WORKPATH
 
     if [[ "$FORMAT" = "country" ]]
     then
@@ -107,9 +107,9 @@ function core()
     elif
         [[ "$FORMAT" = "ip" ]]
     then
-        if [[ "$TARGET" =~ ^((\[0-9\]|\[1-9\]\[0-9\]|1\[0-9\]{2}|2\[0-4\]\[0-9\]|25\[0-5\])\\.){3}(\[0-9\]|\[1-9\]\[0-9\]|1\[0-9\]{2}|2\[0-4\]\[0-9\]|25\[0-5\])?$ ]]
+        if [[ "$TARGET" =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])?$ ]]
         then 
-            echo "$IP address $TARGET is valid"
+            echo "$IP address detected, $TARGET is valid"
             if [[ "$TARGET" != "0.0.0.0" ]]
             then
                 if [[ "$ACTION" = "block" ]]
@@ -134,9 +134,9 @@ function core()
                 exit 1
             fi 
             
-        elif [[ "$TARGET" =~ ^((\[0-9\]|\[1-9\]\[0-9\]|1\[0-9\]{2}|2\[0-4\]\[0-9\]|25\[0-5\])\\.){3}(\[0-9\]|\[1-9\]\[0-9\]|1\[0-9\]{2}|2\[0-4\]\[0-9\]|25\[0-5\])(\\/(\[0-9\]|\[1-2\]\[0-9\]|3\[0-2\]))?$ ]]
+        elif [[ "$TARGET" =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))?$ ]]
         then    
-            echo "CIDR range $TARGET is valid"
+            echo "CIDR range detected, $TARGET is valid"
             if [[ "$TARGET" != "0.0.0.0" ]]
             then
                 if [[ "$ACTION" = "block" ]]
@@ -177,26 +177,35 @@ function action()
     ACTION="$1"
     FORMAT="$2"
     TARGET="$3"
-    WORKPATH="$4"
+    #WORKPATH="$4"
 
     if [[ $1 = "help" ]]
         then 
-            echo "./emergency_fw.sh {action} {format} {target}"
+            echo "./emergencyFW.sh {action} {format} {target}"
+            echo "ex.: ./emergencyFW block country je"
             echo "{action} = block / unblock"
-            echo "{format} = ipaddr, iprange or country"
-            echo "{target} = 192.168.x.x, 192.168.1.0/24 or fr/us/en/ca/..."
+            echo "{format} = ip / country"
+            echo "{target} = 192.168.x.x / 192.168.1.0/24 / fr/us/en/ca/..."
 
     elif [[ "$#" -ne 3 ]]; 
-        then echo "Invalid parameters, use 'help'"
+    then 
+        echo "Invalid parameters, use 'help'"
+        exit 1
+
+    elif [[ "$EUID" -ne 0 ]]
+    then
+        echo "Please run as root"
         exit 1
 
     elif [[ "$ACTION" = "block" ]]
     then
         core $ACTION $FORMAT $TARGET $WORKPATH
+        echo "----- OPERATION SUCCESSFUL -----"
     
     elif [[ "$ACTION" = "unblock" ]]
     then
         core $ACTION $FORMAT $TARGET $WORKPATH
+        echo "----- OPERATION SUCCESSFUL -----"
 
     else
         echo "Invalid action, use 'help'"
@@ -209,6 +218,5 @@ function action()
 
 ##### EXECUTION #####
 
-action $ACTION $FORMAT $TARGET $WORKPATH
-echo "----- OPERATION SUCCESSFUL -----"
+action $ACTION $FORMAT $TARGET #$WORKPATH
 exit 0

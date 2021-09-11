@@ -3,5 +3,6 @@ TODO :
 - [ ] Anti lockout controls
 - [ ] Debug execution time feature
 - [ ] Progress bar
-- [ ] Root execution verification (workpath permissions / owner)
+- [X] Root execution verification
 - [ ] Create a console messages function
+- [ ] Colorize
